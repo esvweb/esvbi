@@ -21,6 +21,7 @@ import { MarketingFunnelView } from './components/MarketingFunnelView';
 import { PatientOpsView } from './components/PatientOpsView';
 import { CloudTalkView } from './components/CloudTalkView';
 import { PipelineBreakdownModal } from './components/PipelineBreakdownModal';
+import { Login } from './components/Login';
 import {
     LayoutDashboard, BarChart2, TrendingUp, Filter,
     Users, Database, Activity, Brain, LayoutList, PieChart as PieIcon,
@@ -37,21 +38,23 @@ import {
 const Overview = ({
     leads,
     allLeads,
+    patients,
     onMetricClick,
     onPipelineBucketClick,
     manualTotalRevenue,
     repTargets,
     isDarkMode,
-    userType // NEW PROP
+    userType
 }: {
     leads: Lead[],
     allLeads: Lead[],
+    patients: Patient[],
     onMetricClick: (leads: Lead[], title: string) => void,
     onPipelineBucketClick: (title: string, leads: Lead[]) => void,
     manualTotalRevenue: number,
     repTargets: Record<string, RepTargetData>,
     isDarkMode: boolean,
-    userType: 'TEAM_LEADER' | 'MANAGER' // NEW PROP TYPE
+    userType: 'TEAM_LEADER' | 'MANAGER'
 }) => {
     // --- CHART COPY HANDLER ---
     const copyChart = async (elementId: string) => {
@@ -268,7 +271,11 @@ const Overview = ({
                         <div className="h-8 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
                         <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wide">Manager Intelligence</h2>
                     </div>
-                    <ManagerOverview leads={leads} />
+                    <ManagerOverview
+                        leads={leads}
+                        patients={patients}
+                        onLeadListOpen={onMetricClick}
+                    />
                     <div className="my-10 border-t border-slate-200 dark:border-slate-800 relative">
                         <div className="absolute left-0 top-[-10px] bg-slate-50 dark:bg-slate-950 pr-4 text-xs font-bold text-slate-400">OPERATIONAL OVERVIEW</div>
                     </div>
@@ -577,6 +584,10 @@ const App = () => {
 
     const [userType, setUserType] = useState<'TEAM_LEADER' | 'MANAGER'>('TEAM_LEADER');
 
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+        return localStorage.getItem('isAuthenticated') === 'true';
+    });
+
     useEffect(() => {
         if (theme === 'dark') {
             document.documentElement.classList.add('dark');
@@ -629,6 +640,10 @@ const App = () => {
         teams: Object.keys(TEAMS)
     }), [leads]);
 
+    if (!isAuthenticated) {
+        return <Login onLogin={() => setIsAuthenticated(true)} />;
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 font-sans selection:bg-[#28BA9A]/30">
             <div className="max-w-[1600px] mx-auto p-4 md:p-6">
@@ -680,6 +695,7 @@ const App = () => {
                         <Overview
                             leads={filteredLeads}
                             allLeads={leads}
+                            patients={patients}
                             onMetricClick={handleMetricClick}
                             onPipelineBucketClick={handlePipelineBucketClick}
                             manualTotalRevenue={0}
