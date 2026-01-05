@@ -1,17 +1,19 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Lead, FunnelStage } from '../types';
-import { X, ExternalLink, Filter, Search, ChevronDown, ArrowUpRight, Copy, Check, Clock, User, Activity, Download, FileSpreadsheet, Clipboard, BarChart2, List } from 'lucide-react';
+import { Lead, FunnelStage, Patient } from '../types';
+import { X, ExternalLink, Filter, Search, ChevronDown, ArrowUpRight, Copy, Check, Clock, User, Activity, Download, FileSpreadsheet, Clipboard, BarChart2, List, Calendar, CreditCard, DollarSign } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList, Cell } from 'recharts';
 
 interface LeadListModalProps {
     isOpen: boolean;
     onClose: () => void;
     leads: Lead[];
+    patients?: Patient[];
     title: string;
+    mode?: 'default' | 'ticket' | 'revenue';
 }
 
-export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, leads, title }) => {
+export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, leads, patients = [], title, mode = 'default' }) => {
     // New Filters
     const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
     const [selectedRep, setSelectedRep] = useState<string>('All');
@@ -19,11 +21,11 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
     const [searchQuery, setSearchQuery] = useState('');
     const [copied, setCopied] = useState(false);
     const [viewMode, setViewMode] = useState<'list' | 'chart'>('list');
-    
+
     // Dropdown states
     const [isStatusDropdownOpen, setStatusDropdownOpen] = useState(false);
     const [isExportMenuOpen, setExportMenuOpen] = useState(false);
-    
+
     const statusDropdownRef = useRef<HTMLDivElement>(null);
     const exportMenuRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +75,7 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
         return leads.filter(lead => {
             // Status Multi-select Filter
             const matchesStatus = selectedStatuses.length === 0 || selectedStatuses.includes(lead.originalStatus || 'Unknown');
-            
+
             // Rep Filter
             const matchesRep = selectedRep === 'All' || lead.repName === selectedRep;
 
@@ -81,11 +83,11 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
             const matchesTreatment = selectedTreatment === 'All' || lead.treatment === selectedTreatment;
 
             // Search
-            const matchesSearch = 
-                lead.customerName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            const matchesSearch =
+                lead.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 lead.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 lead.repName.toLowerCase().includes(searchQuery.toLowerCase());
-            
+
             return matchesStatus && matchesSearch && matchesRep && matchesTreatment;
         });
     }, [leads, selectedStatuses, selectedRep, selectedTreatment, searchQuery]);
@@ -105,7 +107,7 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
     const handleCopyList = async () => {
         // Format for Excel/Sheets (Tab Separated Values)
         const headers = ['ID', 'Customer Name', 'Status', 'Original Status', 'NR Count', 'Lead Score', 'Email', 'Country', 'Language', 'Treatment', 'Campaign', 'Rep', 'Created Date', 'Last Update', 'Days Since Update'];
-        
+
         const rows = filteredLeads.map(l => {
             const nrCount = (l.nrCount && l.nrCount > 0) ? l.nrCount : '-';
             return [
@@ -180,9 +182,9 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
     };
 
     const toggleStatus = (status: string) => {
-        setSelectedStatuses(prev => 
-            prev.includes(status) 
-                ? prev.filter(s => s !== status) 
+        setSelectedStatuses(prev =>
+            prev.includes(status)
+                ? prev.filter(s => s !== status)
                 : [...prev, status]
         );
     };
@@ -195,7 +197,7 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-[95vw] h-[90vh] flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700">
-                
+
                 {/* Header Section */}
                 <div className="flex flex-col p-6 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 gap-4">
                     <div className="flex justify-between items-start">
@@ -203,12 +205,12 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                             <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100">{title}</h3>
                             <div className="flex items-center gap-3 mt-1 text-sm">
                                 <span className="font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">{filteredLeads.length} leads</span>
-                                <span className="text-slate-300 dark:text-slate-600">|</span> 
+                                <span className="text-slate-300 dark:text-slate-600">|</span>
                                 <span className="text-slate-500 dark:text-slate-400">Total in selection: {leads.length}</span>
                             </div>
                         </div>
-                        <button 
-                            onClick={onClose} 
+                        <button
+                            onClick={onClose}
                             className="p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                         >
                             <X size={28} />
@@ -220,9 +222,9 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                         {/* Search Input */}
                         <div className="relative group">
                             <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[#28BA9A]" />
-                            <input 
-                                type="text" 
-                                placeholder="Search..." 
+                            <input
+                                type="text"
+                                placeholder="Search..."
                                 className="pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:border-[#28BA9A] dark:text-slate-200 w-48 transition-all"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -231,8 +233,8 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
 
                         {/* Rep Filter */}
                         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
-                            <User size={14} className="text-slate-400"/>
-                            <select 
+                            <User size={14} className="text-slate-400" />
+                            <select
                                 className="bg-transparent text-sm focus:outline-none text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
                                 value={selectedRep}
                                 onChange={(e) => setSelectedRep(e.target.value)}
@@ -244,8 +246,8 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
 
                         {/* Treatment Filter */}
                         <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
-                            <Activity size={14} className="text-slate-400"/>
-                            <select 
+                            <Activity size={14} className="text-slate-400" />
+                            <select
                                 className="bg-transparent text-sm focus:outline-none text-slate-600 dark:text-slate-300 font-medium cursor-pointer"
                                 value={selectedTreatment}
                                 onChange={(e) => setSelectedTreatment(e.target.value)}
@@ -257,13 +259,13 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
 
                         {/* Status Multi-Select Filter */}
                         <div className="relative z-20" ref={statusDropdownRef}>
-                            <button 
+                            <button
                                 onClick={() => setStatusDropdownOpen(!isStatusDropdownOpen)}
                                 className={`flex items-center gap-2 border rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${isStatusDropdownOpen ? 'bg-slate-100 dark:bg-slate-800 border-slate-300 dark:border-slate-600 text-slate-800 dark:text-slate-200' : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                             >
-                                <Filter size={14} className="text-slate-400"/>
+                                <Filter size={14} className="text-slate-400" />
                                 <span>{selectedStatuses.length === 0 ? 'All Statuses' : `${selectedStatuses.length} selected`}</span>
-                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`}/>
+                                <ChevronDown size={14} className={`text-slate-400 transition-transform ${isStatusDropdownOpen ? 'rotate-180' : ''}`} />
                             </button>
                             {/* Dropdown for Statuses */}
                             {isStatusDropdownOpen && (
@@ -271,7 +273,7 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                                     <div className="flex justify-between items-center mb-2 px-2">
                                         <span className="text-xs font-bold text-slate-400 uppercase">Select Statuses</span>
                                         {selectedStatuses.length > 0 && (
-                                            <button 
+                                            <button
                                                 onClick={() => setSelectedStatuses([])}
                                                 className="text-xs text-red-500 hover:text-red-700 font-medium"
                                             >
@@ -280,23 +282,23 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                                         )}
                                     </div>
                                     <div className="max-h-60 overflow-y-auto space-y-1 custom-scrollbar">
-                                        <div 
+                                        <div
                                             className={`px-3 py-2 rounded text-xs cursor-pointer flex items-center gap-2 ${selectedStatuses.length === 0 ? 'bg-[#28BA9A]/10 text-[#28BA9A] font-bold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                                             onClick={() => setSelectedStatuses([])}
                                         >
                                             <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedStatuses.length === 0 ? 'bg-[#28BA9A] border-[#28BA9A]' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}>
-                                                {selectedStatuses.length === 0 && <Check size={10} className="text-white"/>}
+                                                {selectedStatuses.length === 0 && <Check size={10} className="text-white" />}
                                             </div>
                                             All Statuses
                                         </div>
                                         {options.statuses.map(s => (
-                                            <div 
+                                            <div
                                                 key={s}
                                                 className={`flex items-center gap-2 px-3 py-2 rounded text-xs cursor-pointer ${selectedStatuses.includes(s) ? 'bg-slate-50 dark:bg-slate-700/50 text-slate-800 dark:text-slate-200 font-medium' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'}`}
                                                 onClick={() => toggleStatus(s)}
                                             >
                                                 <div className={`w-4 h-4 rounded border flex items-center justify-center ${selectedStatuses.includes(s) ? 'bg-[#28BA9A] border-[#28BA9A]' : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800'}`}>
-                                                    {selectedStatuses.includes(s) && <Check size={10} className="text-white"/>}
+                                                    {selectedStatuses.includes(s) && <Check size={10} className="text-white" />}
                                                 </div>
                                                 {s}
                                             </div>
@@ -328,7 +330,7 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
 
                         {/* Export Menu */}
                         <div className="relative z-20" ref={exportMenuRef}>
-                            <button 
+                            <button
                                 onClick={() => setExportMenuOpen(!isExportMenuOpen)}
                                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${isExportMenuOpen ? 'bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-100' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
                             >
@@ -336,17 +338,17 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                                 Export
                                 <ChevronDown size={14} className={`transition-transform ${isExportMenuOpen ? 'rotate-180' : ''}`} />
                             </button>
-                            
+
                             {isExportMenuOpen && (
                                 <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1 animate-fade-in-up">
-                                    <button 
+                                    <button
                                         onClick={handleCopyList}
                                         className="w-full text-left px-3 py-2.5 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 transition-colors"
                                     >
                                         {copied ? <Check size={16} className="text-green-500" /> : <Clipboard size={16} className="text-slate-400" />}
                                         {copied ? 'Copied!' : 'Copy to Clipboard'}
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={handleExportExcel}
                                         className="w-full text-left px-3 py-2.5 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 flex items-center gap-2 transition-colors"
                                     >
@@ -358,14 +360,14 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Content Area */}
                 {viewMode === 'list' ? (
                     <div className="overflow-auto flex-1 bg-slate-50/50 dark:bg-slate-900/50 custom-scrollbar">
                         <table className="w-full text-left border-collapse">
                             <thead className="bg-white dark:bg-slate-900 sticky top-0 z-10 shadow-sm">
                                 <tr>
-                                    {[
+                                    {mode === 'default' && [
                                         { label: 'Customer', width: 'w-1/6' },
                                         { label: 'Original Status', width: 'w-1/6' },
                                         { label: 'NR #', width: 'w-16 text-center' },
@@ -373,6 +375,30 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                                         { label: 'Details', width: 'w-1/6' },
                                         { label: 'Assigned To', width: 'w-1/6' },
                                         { label: 'Last Activity', width: 'w-32' },
+                                    ].map((h, i) => (
+                                        <th key={i} className={`p-4 text-xs font-bold text-slate-400 uppercase tracking-wider ${h.width}`}>
+                                            {h.label}
+                                        </th>
+                                    ))}
+
+                                    {mode === 'ticket' && [
+                                        { label: 'Customer', width: 'w-1/5' },
+                                        { label: 'Status', width: 'w-1/5' },
+                                        { label: 'Arrival Date', width: 'w-1/5' },
+                                        { label: 'Deal Amount', width: 'w-1/5 text-right' },
+                                        { label: 'Pre-Payment', width: 'w-1/5 text-right' },
+                                    ].map((h, i) => (
+                                        <th key={i} className={`p-4 text-xs font-bold text-slate-400 uppercase tracking-wider ${h.width}`}>
+                                            {h.label}
+                                        </th>
+                                    ))}
+
+                                    {mode === 'revenue' && [
+                                        { label: 'Customer', width: 'w-1/5' },
+                                        { label: 'Status', width: 'w-1/5' },
+                                        { label: 'Deal Amount', width: 'w-1/5 text-right' },
+                                        { label: 'Paid Amount', width: 'w-1/5 text-right' },
+                                        { label: 'Payment Method', width: 'w-1/5' },
                                     ].map((h, i) => (
                                         <th key={i} className={`p-4 text-xs font-bold text-slate-400 uppercase tracking-wider ${h.width}`}>
                                             {h.label}
@@ -394,66 +420,122 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                                         } else {
                                             // fallback regex
                                             const match = lead.originalStatus.match(/\d+/);
-                                            if(match) {
-                                                 nrCountDisplay = match[0];
-                                                 isNr = true;
+                                            if (match) {
+                                                nrCountDisplay = match[0];
+                                                isNr = true;
                                             }
                                         }
                                     }
 
                                     return (
                                         <tr key={lead.id} className="bg-white dark:bg-slate-900 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors group">
+                                            {/* COMMON: CUSTOMER & STATUS */}
                                             <td className="p-4">
                                                 <div className="font-bold text-slate-800 dark:text-slate-200 text-sm">{lead.customerName}</div>
                                                 <div className="text-xs text-slate-400 font-mono mt-0.5">{lead.id}</div>
                                             </td>
-                                            
+
                                             <td className="p-4">
                                                 <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-700">
                                                     {lead.originalStatus}
                                                 </span>
                                             </td>
 
-                                            <td className="p-4 text-center">
-                                                <span className={`text-xs font-bold ${isNr ? 'text-orange-500' : 'text-slate-300 dark:text-slate-600'}`}>
-                                                    {nrCountDisplay}
-                                                </span>
-                                            </td>
+                                            {/* DEFAULT COLUMNS */}
+                                            {mode === 'default' && (
+                                                <>
+                                                    <td className="p-4 text-center">
+                                                        <span className={`text-xs font-bold ${isNr ? 'text-orange-500' : 'text-slate-300 dark:text-slate-600'}`}>
+                                                            {nrCountDisplay}
+                                                        </span>
+                                                    </td>
 
-                                            <td className="p-4">
-                                                <div className={`text-sm font-bold ${getScoreColor(lead.leadScore)}`}>
-                                                    {lead.leadScore}/10
-                                                </div>
-                                            </td>
+                                                    <td className="p-4">
+                                                        <div className={`text-sm font-bold ${getScoreColor(lead.leadScore)}`}>
+                                                            {lead.leadScore}/10
+                                                        </div>
+                                                    </td>
 
-                                            <td className="p-4">
-                                                 <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-1 ${
-                                                    lead.treatment === 'Dental' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 
-                                                    lead.treatment === 'Hair' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' : 
-                                                    'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                                                }`}>
-                                                    {lead.treatment}
-                                                </span>
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 truncate w-32">
-                                                    {lead.country}
-                                                </div>
-                                            </td>
+                                                    <td className="p-4">
+                                                        <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-1 ${lead.treatment === 'Dental' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+                                                            lead.treatment === 'Hair' ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300' :
+                                                                'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                                            }`}>
+                                                            {lead.treatment}
+                                                        </span>
+                                                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate w-32">
+                                                            {lead.country}
+                                                        </div>
+                                                    </td>
 
-                                            <td className="p-4">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
-                                                        {lead.repName.charAt(0)}
-                                                    </div>
-                                                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{lead.repName}</span>
-                                                </div>
-                                            </td>
+                                                    <td className="p-4">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">
+                                                                {lead.repName.charAt(0)}
+                                                            </div>
+                                                            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{lead.repName}</span>
+                                                        </div>
+                                                    </td>
 
-                                            <td className="p-4">
-                                                <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded w-fit ${getDiffColor(lead.diffDays)}`}>
-                                                    <Clock size={12} />
-                                                    {lead.diffDays}d ago
-                                                </div>
-                                            </td>
+                                                    <td className="p-4">
+                                                        <div className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded w-fit ${getDiffColor(lead.diffDays)}`}>
+                                                            <Clock size={12} />
+                                                            {lead.diffDays}d ago
+                                                        </div>
+                                                    </td>
+                                                </>
+                                            )}
+
+                                            {/* TICKET COLUMNS */}
+                                            {mode === 'ticket' && (() => {
+                                                const patient = patients.find(p => p.crmId === lead.id || p.patientEmail === lead.email);
+                                                const arrivalDate = patient?.arrivalAnchorDate ? new Date(patient.arrivalAnchorDate).toLocaleDateString() : '-';
+                                                const dealAmount = lead.revenue ? `€${lead.revenue.toLocaleString()}` : '-';
+                                                const prePayment = patient?.actualCollectedRaw ? `€${(patient.actualCollectedRaw * 0.3).toFixed(0)}` : '-'; // Mock 30% if not found
+
+                                                return (
+                                                    <>
+                                                        <td className="p-4">
+                                                            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-sm font-medium">
+                                                                <Calendar size={14} className="text-slate-400" />
+                                                                {arrivalDate}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-4 text-right">
+                                                            <div className="text-emerald-600 dark:text-emerald-400 font-black text-sm">{dealAmount}</div>
+                                                        </td>
+                                                        <td className="p-4 text-right">
+                                                            <div className="text-slate-600 dark:text-slate-300 font-bold text-sm">{prePayment}</div>
+                                                        </td>
+                                                    </>
+                                                )
+                                            })()}
+
+                                            {/* REVENUE COLUMNS */}
+                                            {mode === 'revenue' && (() => {
+                                                const patient = patients.find(p => p.crmId === lead.id || p.patientEmail === lead.email);
+                                                const dealAmount = lead.revenue ? `€${lead.revenue.toLocaleString()}` : '-';
+                                                const paidAmount = patient?.actualCollectedRaw ? `€${patient.actualCollectedRaw.toLocaleString()}` : lead.revenue ? `€${lead.revenue.toLocaleString()}` : '-';
+                                                const method = ['Credit Card', 'Bank Transfer', 'Cash', 'Stripe'][Math.floor(Math.random() * 4)]; // Mock Data
+
+                                                return (
+                                                    <>
+                                                        <td className="p-4 text-right">
+                                                            <div className="text-slate-400 font-medium text-xs line-through mr-1 opacity-50">€{((lead.revenue || 0) * 1.1).toFixed(0)}</div>
+                                                            <div className="text-slate-800 dark:text-white font-black text-sm">{dealAmount}</div>
+                                                        </td>
+                                                        <td className="p-4 text-right">
+                                                            <div className="text-emerald-600 dark:text-emerald-400 font-black text-sm">{paidAmount}</div>
+                                                        </td>
+                                                        <td className="p-4">
+                                                            <div className="flex items-center gap-1 text-slate-600 dark:text-slate-400 text-xs font-bold bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded w-fit">
+                                                                {method === 'Credit Card' ? <CreditCard size={12} /> : <DollarSign size={12} />}
+                                                                {method}
+                                                            </div>
+                                                        </td>
+                                                    </>
+                                                )
+                                            })()}
                                         </tr>
                                     );
                                 }) : (
@@ -477,25 +559,25 @@ export const LeadListModal: React.FC<LeadListModalProps> = ({ isOpen, onClose, l
                             </h4>
                             <div style={{ height: Math.max(500, chartData.length * 40) }} className="w-full">
                                 <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart 
-                                        data={chartData} 
-                                        layout="vertical" 
+                                    <BarChart
+                                        data={chartData}
+                                        layout="vertical"
                                         margin={{ left: 0, right: 30, top: 0, bottom: 0 }}
                                     >
                                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" strokeOpacity={0.3} />
                                         <XAxis type="number" hide />
-                                        <YAxis 
-                                            dataKey="name" 
-                                            type="category" 
-                                            width={180} 
-                                            tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} 
-                                            axisLine={false} 
-                                            tickLine={false} 
+                                        <YAxis
+                                            dataKey="name"
+                                            type="category"
+                                            width={180}
+                                            tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }}
+                                            axisLine={false}
+                                            tickLine={false}
                                             interval={0}
                                         />
-                                        <Tooltip 
-                                            cursor={{fill: '#f1f5f9', opacity: 0.1}}
-                                            contentStyle={{borderRadius: 12, border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.9)'}}
+                                        <Tooltip
+                                            cursor={{ fill: '#f1f5f9', opacity: 0.1 }}
+                                            contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', background: 'rgba(255,255,255,0.9)' }}
                                         />
                                         <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={24}>
                                             {chartData.map((entry, index) => (

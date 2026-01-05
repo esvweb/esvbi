@@ -7,6 +7,7 @@ import {
     ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend
 } from 'recharts';
 import { Lead, Patient } from '../types';
+import { MarketingIntelligence } from './MarketingIntelligence';
 
 // --- TYPES ---
 
@@ -23,7 +24,7 @@ interface TrendData {
 interface ManagerOverviewProps {
     leads: Lead[];
     patients?: Patient[];
-    onLeadListOpen: (leads: Lead[], title: string) => void;
+    onLeadListOpen: (leads: Lead[], title: string, mode?: 'default' | 'ticket' | 'revenue') => void;
 }
 
 // --- CONSTANTS ---
@@ -111,11 +112,14 @@ const PeriodToggle = ({ period, setPeriod }: { period: Period, setPeriod: (p: Pe
         {(['today', 'week', 'month'] as Period[]).map(p => (
             <button
                 key={p}
-                className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${period === p
+                className={`px-2 py-1 rounded-md text-[9px] font-bold transition-all ${period === p
                     ? 'bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-white'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
-                onClick={() => setPeriod(p)}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    setPeriod(p);
+                }}
             >
                 {p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
@@ -152,7 +156,9 @@ const TreatmentBreakdown = ({
     const colors = colorClasses[color];
 
     return (
-        <div className="mb-3 last:mb-0">
+        <div
+            className="mb-3 last:mb-0 hover:bg-slate-50 dark:hover:bg-slate-700/50 p-1.5 rounded-lg transition-colors cursor-pointer"
+        >
             <div className="flex items-center gap-3 mb-1.5">
                 <span className="text-xs font-bold text-slate-600 dark:text-slate-400 w-16">{label}</span>
                 <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -185,7 +191,9 @@ const MetricCard = ({
     dentalCount,
     dentalPercentage,
     dentalChange,
-    onClick,
+    onMainClick,
+    onHairClick,
+    onDentalClick,
     accentColor,
     subtitle
 }: {
@@ -201,50 +209,63 @@ const MetricCard = ({
     dentalCount: number,
     dentalPercentage: number,
     dentalChange: number,
-    onClick: () => void,
+    onMainClick: () => void,
+    onHairClick: () => void,
+    onDentalClick: () => void,
     accentColor: string,
     subtitle?: string
 }) => (
     <div
-        onClick={onClick}
-        className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 cursor-pointer hover:shadow-md transition-all duration-300 group"
+        className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 transition-all duration-300 group hover:shadow-md"
     >
         <div className={`border-l-4 ${accentColor} pl-4`}>
-            {/* Header */}
-            <div className="flex justify-between items-start mb-4">
-                <div className="flex-1">
-                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2">
-                        <Icon size={14} className={accentColor.replace('border-', 'text-')} />
-                        {title}
-                    </p>
-                    <div className="flex items-baseline gap-2">
-                        <h3 className="text-4xl font-black text-slate-800 dark:text-white">{value}</h3>
-                        {subtitle && <span className="text-xs font-bold text-slate-400">{subtitle}</span>}
+            {/* Header - Make Clickable */}
+            <div className="flex flex-col gap-4 justify-between items-start mb-4">
+                <div
+                    onClick={(e) => { e.stopPropagation(); onMainClick(); }}
+                    className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity w-full"
+                >
+                    <div className="flex justify-between w-full">
+                        <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2 whitespace-nowrap">
+                            <Icon size={14} className={accentColor.replace('border-', 'text-')} />
+                            {title}
+                        </p>
+                        <div className="self-start" onClick={(e) => e.stopPropagation()}>
+                            <PeriodToggle period={period} setPeriod={setPeriod} />
+                        </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-baseline gap-2 mt-2">
+                        <h3 className="text-3xl lg:text-4xl font-black text-slate-800 dark:text-white">{value}</h3>
+                        {subtitle && <span className="text-xs font-bold text-slate-400 whitespace-nowrap">{subtitle}</span>}
                     </div>
                     <p className={`text-xs font-bold mt-2 flex items-center gap-1 ${change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                         {change >= 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
                         {Math.abs(change).toFixed(1)}% vs prev. period
                     </p>
                 </div>
-                <PeriodToggle period={period} setPeriod={setPeriod} />
             </div>
 
             {/* Treatment Breakdown */}
-            <div className="mt-6">
-                <TreatmentBreakdown
-                    label="HAIR"
-                    count={hairCount}
-                    percentage={hairPercentage}
-                    change={hairChange}
-                    color="emerald"
-                />
-                <TreatmentBreakdown
-                    label="DENTAL"
-                    count={dentalCount}
-                    percentage={dentalPercentage}
-                    change={dentalChange}
-                    color="blue"
-                />
+            <div className="mt-6 space-y-2">
+                <div onClick={(e) => { e.stopPropagation(); onHairClick(); }}>
+                    <TreatmentBreakdown
+                        label="HAIR"
+                        count={hairCount}
+                        percentage={hairPercentage}
+                        change={hairChange}
+                        color="emerald"
+                    />
+                </div>
+                <div onClick={(e) => { e.stopPropagation(); onDentalClick(); }}>
+                    <TreatmentBreakdown
+                        label="DENTAL"
+                        count={dentalCount}
+                        percentage={dentalPercentage}
+                        change={dentalChange}
+                        color="blue"
+                    />
+                </div>
             </div>
         </div>
     </div>
@@ -361,7 +382,8 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
             dentalCount: dentalInterested,
             dentalPercentage: dentalRate,
             dentalChange,
-            leads: interestedLeads
+            leads: interestedLeads,
+            currentLeads: currentLeads // Added for detailed drill-down
         };
     }, [leads, interestedPeriod]);
 
@@ -400,7 +422,8 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
             dentalCount,
             dentalPercentage,
             dentalChange,
-            leads: ticketLeads
+            leads: ticketLeads,
+            currentLeads: currentLeads // Added for detailed drill-down
         };
     }, [leads, ticketPeriod]);
 
@@ -438,7 +461,8 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
             dentalPercentage,
             dentalChange,
             avgTicket: avgTicket.toFixed(0),
-            leads: currentLeads.filter(l => l.revenue > 0)
+            leads: currentLeads.filter(l => l.revenue > 0),
+            currentLeads: currentLeads // Added for detailed drill-down
         };
     }, [leads, revenuePeriod]);
 
@@ -537,7 +561,9 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     dentalCount={totalLeadsMetrics.dentalCount}
                     dentalPercentage={totalLeadsMetrics.dentalPercentage}
                     dentalChange={totalLeadsMetrics.dentalChange}
-                    onClick={() => onLeadListOpen(totalLeadsMetrics.leads, `Total Leads - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`)}
+                    onMainClick={() => onLeadListOpen(totalLeadsMetrics.leads, `Total Leads - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`, 'default')}
+                    onHairClick={() => onLeadListOpen(totalLeadsMetrics.leads.filter(l => l.treatment === 'Hair'), `Total Leads (Hair) - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`, 'default')}
+                    onDentalClick={() => onLeadListOpen(totalLeadsMetrics.leads.filter(l => l.treatment === 'Dental'), `Total Leads (Dental) - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`, 'default')}
                     accentColor="border-emerald-500"
                 />
 
@@ -556,8 +582,10 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     dentalCount={interestedMetrics.dentalCount}
                     dentalPercentage={interestedMetrics.dentalPercentage}
                     dentalChange={interestedMetrics.dentalChange}
-                    onClick={() => onLeadListOpen(interestedMetrics.leads, `Interested Leads - ${interestedPeriod.charAt(0).toUpperCase() + interestedPeriod.slice(1)}`)}
-                    accentColor="border-blue-500"
+                    onMainClick={() => onLeadListOpen(interestedMetrics.leads, `Interested Leads - ${interestedPeriod.charAt(0).toUpperCase() + interestedPeriod.slice(1)}`, 'default')}
+                    onHairClick={() => onLeadListOpen(interestedMetrics.leads.filter(l => l.treatment === 'Hair'), `Interested Leads (Hair) - ${interestedPeriod.charAt(0).toUpperCase() + interestedPeriod.slice(1)}`, 'default')}
+                    onDentalClick={() => onLeadListOpen(interestedMetrics.leads.filter(l => l.treatment === 'Dental'), `Interested Leads (Dental) - ${interestedPeriod.charAt(0).toUpperCase() + interestedPeriod.slice(1)}`, 'default')}
+                    accentColor="border-orange-500"
                 />
 
                 {/* CARD 3: TICKET RECEIVED */}
@@ -574,7 +602,9 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     dentalCount={ticketMetrics.dentalCount}
                     dentalPercentage={ticketMetrics.dentalPercentage}
                     dentalChange={ticketMetrics.dentalChange}
-                    onClick={() => onLeadListOpen(ticketMetrics.leads, `Ticket Received - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`)}
+                    onMainClick={() => onLeadListOpen(ticketMetrics.leads, `Ticket Received - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`, 'ticket')}
+                    onHairClick={() => onLeadListOpen(ticketMetrics.leads.filter(l => l.treatment === 'Hair'), `Ticket Received (Hair) - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`, 'ticket')}
+                    onDentalClick={() => onLeadListOpen(ticketMetrics.leads.filter(l => l.treatment === 'Dental'), `Ticket Received (Dental) - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`, 'ticket')}
                     accentColor="border-purple-500"
                 />
 
@@ -592,8 +622,10 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     dentalCount={revenueMetrics.dentalCount}
                     dentalPercentage={revenueMetrics.dentalPercentage}
                     dentalChange={revenueMetrics.dentalChange}
-                    onClick={() => onLeadListOpen(revenueMetrics.leads, `Revenue Leads - ${revenuePeriod.charAt(0).toUpperCase() + revenuePeriod.slice(1)}`)}
-                    accentColor="border-emerald-600"
+                    onMainClick={() => onLeadListOpen(revenueMetrics.leads, `Revenue Leads - ${revenuePeriod.charAt(0).toUpperCase() + revenuePeriod.slice(1)}`, 'revenue')}
+                    onHairClick={() => onLeadListOpen(revenueMetrics.leads.filter(l => l.treatment === 'Hair'), `Revenue Leads (Hair) - ${revenuePeriod.charAt(0).toUpperCase() + revenuePeriod.slice(1)}`, 'revenue')}
+                    onDentalClick={() => onLeadListOpen(revenueMetrics.leads.filter(l => l.treatment === 'Dental'), `Revenue Leads (Dental) - ${revenuePeriod.charAt(0).toUpperCase() + revenuePeriod.slice(1)}`, 'revenue')}
+                    accentColor="border-rose-500"
                     subtitle={`Avg: €${revenueMetrics.avgTicket}`}
                 />
             </div>
@@ -691,6 +723,9 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     </ResponsiveContainer>
                 </div>
             </div>
+
+            {/* MARKETING INTELLIGENCE MODULE */}
+            <MarketingIntelligence />
         </div>
     );
 };

@@ -269,7 +269,7 @@ const Overview = ({
                 <div className="animate-fade-in-up">
                     <div className="mb-6 flex items-center gap-3">
                         <div className="h-8 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wide">Manager Intelligence</h2>
+                        <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wide">Core Metrics</h2>
                     </div>
                     <ManagerOverview
                         leads={leads}
@@ -571,7 +571,9 @@ const App = () => {
     const [view, setView] = useState<'overview' | 'comparison' | 'reps' | 'diagnosis' | 'pipeline' | 'data' | 'pareto' | 'splitter' | 'marketing' | 'patient_ops' | 'cloudtalk'>('overview');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalLeads, setModalLeads] = useState<Lead[]>([]);
+    const [modalPatients, setModalPatients] = useState<Patient[]>([]);
     const [modalTitle, setModalTitle] = useState('');
+    const [modalMode, setModalMode] = useState<'default' | 'ticket' | 'revenue'>('default');
 
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         if (typeof window !== 'undefined') {
@@ -614,9 +616,11 @@ const App = () => {
 
     const filteredLeads = useMemo(() => filterLeads(leads, filters), [leads, filters]);
 
-    const handleMetricClick = (leadsData: Lead[], title: string) => {
+    const handleMetricClick = (leadsData: Lead[], title: string, mode: 'default' | 'ticket' | 'revenue' = 'default') => {
         setModalLeads(leadsData);
+        setModalPatients(patients); // Pass current patients to modal context
         setModalTitle(title);
+        setModalMode(mode);
         setIsModalOpen(true);
     };
 
@@ -777,7 +781,9 @@ const App = () => {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 leads={modalLeads}
+                patients={modalPatients}
                 title={modalTitle}
+                mode={modalMode}
             />
 
             <PipelineBreakdownModal

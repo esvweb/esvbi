@@ -39,7 +39,9 @@ export const Login: React.FC<LoginProps> = ({ onLogin }) => {
                     <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-[#28BA9A] to-[#1a8a72] shadow-xl shadow-green-500/20 mb-4 transform hover:rotate-6 transition-transform">
                         <Lock className="text-white" size={40} />
                     </div>
-                    <h1 className="text-4xl font-black text-slate-800 dark:text-white mb-2 tracking-tight">Esvitabi <span className="text-[#28BA9A]">Dash</span></h1>
+                    <h1 className="text-4xl font-black mb-2 tracking-tight">
+                        <span className="bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">Esvita BI</span> <span className="text-slate-400">Dashboard</span>
+                    </h1>
                     <p className="text-slate-500 dark:text-slate-400 font-medium tracking-wide">Enter password to access analytics</p>
                 </div>
 
