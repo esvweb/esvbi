@@ -641,7 +641,7 @@ const App = () => {
                     theme={theme}
                     toggleTheme={toggleTheme}
                 >
-                    <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
+                    <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar gap-1">
                         {[
                             ...(userType === 'MANAGER' ? [{ id: 'managerial', label: 'Managerial', icon: Briefcase }] : []),
                             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
@@ -659,7 +659,7 @@ const App = () => {
                             <button
                                 key={v.id}
                                 onClick={() => setView(v.id as any)}
-                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${view === v.id
+                                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${view === v.id
                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-300'
                                     }`}
