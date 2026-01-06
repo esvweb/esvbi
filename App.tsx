@@ -26,7 +26,7 @@ import {
     LayoutDashboard, BarChart2, TrendingUp, Filter,
     Users, Database, Activity, Brain, LayoutList, PieChart as PieIcon,
     Zap, ArrowUpRight, BarChart3, CheckSquare, Sun, Moon, Calendar, Grid, MapPin, Calculator, Clock, Camera,
-    Percent, Scissors, Megaphone, AlertTriangle, CheckCircle, BarChart as BarChartIcon, Globe, Plane, Phone
+    Percent, Scissors, Megaphone, AlertTriangle, CheckCircle, BarChart as BarChartIcon, Globe, Plane, Phone, Briefcase
 } from 'lucide-react';
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -264,23 +264,7 @@ const Overview = ({
     return (
         <div className="space-y-8 animate-fade-in pb-12">
 
-            {/* MANAGER EXCLUSIVE SECTION */}
-            {userType === 'MANAGER' && (
-                <div className="animate-fade-in-up">
-                    <div className="mb-6 flex items-center gap-3">
-                        <div className="h-8 w-1 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-wide">Core Metrics</h2>
-                    </div>
-                    <ManagerOverview
-                        leads={leads}
-                        patients={patients}
-                        onLeadListOpen={onMetricClick}
-                    />
-                    <div className="my-10 border-t border-slate-200 dark:border-slate-800 relative">
-                        <div className="absolute left-0 top-[-10px] bg-slate-50 dark:bg-slate-950 pr-4 text-xs font-bold text-slate-400">OPERATIONAL OVERVIEW</div>
-                    </div>
-                </div>
-            )}
+
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <TiltCard title="Opportunities" val={newLeads} sub="Leads in pipeline" color="text-blue-600 dark:text-blue-400" icon={Zap} onClick={() => onMetricClick(leads, 'All Opportunities')} />
@@ -568,7 +552,7 @@ const App = () => {
         sources: [],
         teams: []
     });
-    const [view, setView] = useState<'overview' | 'comparison' | 'reps' | 'diagnosis' | 'pipeline' | 'data' | 'pareto' | 'splitter' | 'marketing' | 'patient_ops' | 'cloudtalk'>('overview');
+    const [view, setView] = useState<'managerial' | 'overview' | 'comparison' | 'reps' | 'diagnosis' | 'pipeline' | 'data' | 'pareto' | 'splitter' | 'marketing' | 'patient_ops' | 'cloudtalk'>('overview');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalLeads, setModalLeads] = useState<Lead[]>([]);
     const [modalPatients, setModalPatients] = useState<Patient[]>([]);
@@ -659,6 +643,7 @@ const App = () => {
                 >
                     <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar">
                         {[
+                            ...(userType === 'MANAGER' ? [{ id: 'managerial', label: 'Managerial', icon: Briefcase }] : []),
                             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                             { id: 'marketing', label: 'Marketing', icon: Megaphone },
                             { id: 'comparison', label: 'Funnel Compare', icon: BarChart2 },
@@ -695,6 +680,15 @@ const App = () => {
                 )}
 
                 <main>
+                    {view === 'managerial' && userType === 'MANAGER' && (
+                        <div className="animate-fade-in-up">
+                            <ManagerOverview
+                                leads={filteredLeads}
+                                patients={patients}
+                                onLeadListOpen={handleMetricClick}
+                            />
+                        </div>
+                    )}
                     {view === 'overview' && (
                         <Overview
                             leads={filteredLeads}
