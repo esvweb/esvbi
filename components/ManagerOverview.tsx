@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { Lead, Patient } from '../types';
 import { MarketingIntelligence } from './MarketingIntelligence';
+import { PerformanceMonitor } from './PerformanceMonitor';
 
 // --- TYPES ---
 
@@ -723,9 +724,11 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     </ResponsiveContainer>
                 </div>
             </div>
-
             {/* MARKETING INTELLIGENCE MODULE */}
             <MarketingIntelligence />
+
+            {/* PERFORMANCE MONITOR MODULE */}
+            <PerformanceMonitor leads={leads} />
         </div>
     );
 };
