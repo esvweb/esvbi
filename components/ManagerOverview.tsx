@@ -26,6 +26,7 @@ interface ManagerOverviewProps {
     leads: Lead[];
     patients?: Patient[];
     onLeadListOpen: (leads: Lead[], title: string, mode?: 'default' | 'ticket' | 'revenue') => void;
+    userType: 'TEAM_LEADER' | 'MANAGER';
 }
 
 // --- CONSTANTS ---
@@ -221,20 +222,20 @@ const MetricCard = ({
     >
         <div className={`border-l-4 ${accentColor} pl-4`}>
             {/* Header - Make Clickable */}
-            <div className="flex flex-col gap-4 justify-between items-start mb-4">
+            <div className="flex flex-col gap-2 justify-between items-start mb-4">
                 <div
                     onClick={(e) => { e.stopPropagation(); onMainClick(); }}
                     className="flex-1 min-w-0 cursor-pointer hover:opacity-80 transition-opacity w-full"
                 >
-                    <div className="flex justify-between w-full">
-                        <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2 whitespace-nowrap">
-                            <Icon size={14} className={accentColor.replace('border-', 'text-')} />
-                            {title}
-                        </p>
-                        <div className="self-start" onClick={(e) => e.stopPropagation()}>
-                            <PeriodToggle period={period} setPeriod={setPeriod} />
-                        </div>
+                    {/* Period Toggle - Moved to top as separate row to prevent collision */}
+                    <div className="flex justify-end w-full mb-1" onClick={(e) => e.stopPropagation()}>
+                        <PeriodToggle period={period} setPeriod={setPeriod} />
                     </div>
+
+                    <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2 mb-2 whitespace-nowrap">
+                        <Icon size={14} className={accentColor.replace('border-', 'text-')} />
+                        {title}
+                    </p>
 
                     <div className="flex flex-wrap items-baseline gap-2 mt-2">
                         <h3 className="text-3xl lg:text-4xl font-black text-slate-800 dark:text-white">{value}</h3>
@@ -294,7 +295,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 // --- MAIN COMPONENT ---
 
-export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patients, onLeadListOpen }) => {
+export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patients, onLeadListOpen, userType }) => {
     // State for each card's period
     const [totalLeadsPeriod, setTotalLeadsPeriod] = useState<Period>('month');
     const [interestedPeriod, setInterestedPeriod] = useState<Period>('month');
@@ -566,6 +567,7 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     onHairClick={() => onLeadListOpen(totalLeadsMetrics.leads.filter(l => l.treatment === 'Hair'), `Total Leads (Hair) - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`, 'default')}
                     onDentalClick={() => onLeadListOpen(totalLeadsMetrics.leads.filter(l => l.treatment === 'Dental'), `Total Leads (Dental) - ${totalLeadsPeriod.charAt(0).toUpperCase() + totalLeadsPeriod.slice(1)}`, 'default')}
                     accentColor="border-emerald-500"
+                    subtitle="Leads"
                 />
 
                 {/* CARD 2: INTERESTED LEADS */}
@@ -607,6 +609,7 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     onHairClick={() => onLeadListOpen(ticketMetrics.leads.filter(l => l.treatment === 'Hair'), `Ticket Received (Hair) - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`, 'ticket')}
                     onDentalClick={() => onLeadListOpen(ticketMetrics.leads.filter(l => l.treatment === 'Dental'), `Ticket Received (Dental) - ${ticketPeriod.charAt(0).toUpperCase() + ticketPeriod.slice(1)}`, 'ticket')}
                     accentColor="border-purple-500"
+                    subtitle="Tickets"
                 />
 
                 {/* CARD 4: TOTAL REVENUE */}
@@ -724,11 +727,11 @@ export const ManagerOverview: React.FC<ManagerOverviewProps> = ({ leads, patient
                     </ResponsiveContainer>
                 </div>
             </div>
-            {/* MARKETING INTELLIGENCE MODULE */}
-            <MarketingIntelligence />
+            {/* MARKETING INTELLIGENCE MODULE - MANAGERS ONLY */}
+            {userType === 'MANAGER' && <MarketingIntelligence />}
 
             {/* PERFORMANCE MONITOR MODULE */}
-            <PerformanceMonitor leads={leads} />
+            <PerformanceMonitor leads={leads} userType={userType} />
         </div>
     );
 };

@@ -552,7 +552,7 @@ const App = () => {
         sources: [],
         teams: []
     });
-    const [view, setView] = useState<'managerial' | 'overview' | 'comparison' | 'reps' | 'diagnosis' | 'pipeline' | 'data' | 'pareto' | 'splitter' | 'marketing' | 'patient_ops' | 'cloudtalk'>('overview');
+    const [view, setView] = useState<'managerial' | 'overview' | 'comparison' | 'reps' | 'diagnosis' | 'pipeline' | 'data' | 'pareto' | 'splitter' | 'marketing' | 'patient_ops' | 'cloudtalk'>('managerial');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalLeads, setModalLeads] = useState<Lead[]>([]);
     const [modalPatients, setModalPatients] = useState<Patient[]>([]);
@@ -643,7 +643,7 @@ const App = () => {
                 >
                     <div className="flex bg-white dark:bg-slate-900 p-1.5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-x-auto custom-scrollbar gap-1">
                         {[
-                            ...(userType === 'MANAGER' ? [{ id: 'managerial', label: 'Managerial', icon: Briefcase }] : []),
+                            { id: 'managerial', label: 'Managerial', icon: Briefcase },
                             { id: 'overview', label: 'Overview', icon: LayoutDashboard },
                             { id: 'marketing', label: 'Marketing', icon: Megaphone },
                             { id: 'comparison', label: 'Funnel Compare', icon: BarChart2 },
@@ -680,12 +680,13 @@ const App = () => {
                 )}
 
                 <main>
-                    {view === 'managerial' && userType === 'MANAGER' && (
+                    {view === 'managerial' && (
                         <div className="animate-fade-in-up">
                             <ManagerOverview
-                                leads={filteredLeads}
+                                leads={userType === 'MANAGER' ? filteredLeads : filteredLeads.filter(l => TEAMS['Alex Traon'].includes(l.repName))}
                                 patients={patients}
                                 onLeadListOpen={handleMetricClick}
+                                userType={userType}
                             />
                         </div>
                     )}

@@ -20,6 +20,7 @@ interface PerformanceData {
 
 interface PerformanceMonitorProps {
     leads: Lead[];
+    userType: 'TEAM_LEADER' | 'MANAGER';
 }
 
 type ViewMode = 'Agents' | 'Teams';
@@ -61,7 +62,7 @@ const getTargets = (name: string, type: ViewMode) => {
 
 // --- COMPONENT ---
 
-export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ leads }) => {
+export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ leads, userType }) => {
     const [viewMode, setViewMode] = useState<ViewMode>('Agents');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [period, setPeriod] = useState<'today' | 'week' | 'month'>('month'); // Visual only for now
@@ -263,29 +264,31 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ leads })
                     </h3>
 
                     <div className="flex items-center gap-4 w-full md:w-auto">
-                        {/* View Mode Toggle */}
-                        <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
-                            <button
-                                onClick={() => setViewMode('Agents')}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === 'Agents'
-                                    ? 'bg-white dark:bg-slate-800 text-teal-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
-                                    }`}
-                            >
-                                <Users size={14} />
-                                Agents
-                            </button>
-                            <button
-                                onClick={() => setViewMode('Teams')}
-                                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === 'Teams'
-                                    ? 'bg-white dark:bg-slate-800 text-teal-600 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
-                                    }`}
-                            >
-                                <Briefcase size={14} />
-                                Teams
-                            </button>
-                        </div>
+                        {/* View Mode Toggle - Hidden for Team Leaders */}
+                        {userType === 'MANAGER' && (
+                            <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-xl">
+                                <button
+                                    onClick={() => setViewMode('Agents')}
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === 'Agents'
+                                        ? 'bg-white dark:bg-slate-800 text-teal-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                        }`}
+                                >
+                                    <Users size={14} />
+                                    Agents
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('Teams')}
+                                    className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-2 ${viewMode === 'Teams'
+                                        ? 'bg-white dark:bg-slate-800 text-teal-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                        }`}
+                                >
+                                    <Briefcase size={14} />
+                                    Teams
+                                </button>
+                            </div>
+                        )}
 
                         <div className="flex gap-1 bg-slate-100 dark:bg-slate-900 p-1 rounded-xl ml-auto">
                             {(['today', 'week', 'month'] as const).map(p => (
@@ -404,8 +407,8 @@ export const PerformanceMonitor: React.FC<PerformanceMonitorProps> = ({ leads })
                                 </button>
                             </div>
 
-                            {/* TEAM FILTER (Only in Agents View) */}
-                            {viewMode === 'Agents' && (
+                            {/* TEAM FILTER (Only in Agents View and Manager Role) */}
+                            {viewMode === 'Agents' && userType === 'MANAGER' && (
                                 <div className="flex flex-wrap gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/50">
                                     <div className="flex items-center gap-2 text-xs font-bold text-slate-400 uppercase tracking-wider mr-2">
                                         <Filter size={12} />
